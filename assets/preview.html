@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LifeVault Logo Kit</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; background: #F5F7FB; color: #0F172A; padding: 30px; width: 1240px; }
+  h1 { font-size: 20px; margin-bottom: 3px; }
+  p.sub { color: #64748B; font-size: 13px; margin-bottom: 20px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94A3B8; margin: 22px 0 10px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 16px; }
+  .card { border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0; background: #fff; display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; }
+  .dark { background: #0B1220; border-color: #1D6B91; }
+  .check { background-image: linear-gradient(45deg,#CBD5E1 25%,transparent 25%),linear-gradient(-45deg,#CBD5E1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#CBD5E1 75%),linear-gradient(-45deg,transparent 75%,#CBD5E1 75%); background-size: 20px 20px; background-position: 0 0,0 10px,10px -10px,-10px 0; background-color:#fff; }
+  .label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #64748B; font-weight: 600; }
+  .dark .label { color: #7DD3FC; }
+  .row { display: flex; align-items: center; gap: 24px; }
+  .sz { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .sz span { font-size: 10px; color: #94A3B8; }
+  .tiles { display: flex; gap: 14px; align-items: center; }
+  .tile { width: 96px; height: 96px; border-radius: 22px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+  <h1>LifeVault &mdash; Logo Kit</h1>
+  <p class="sub">Concept: a <b>shield</b> (protection) holding a <b>combination dial</b> (the vault), opened left and right so an <b>ECG lifeline</b> (life) runs straight through it.</p>
+
+  <h2>Primary lockup</h2>
+  <div class="grid">
+    <div class="card" style="flex:1 1 620px;">
+      <span class="label">Horizontal lockup &middot; SVG on light UI</span>
+      <img src="lifevault-logo-lockup.svg" width="520" alt="">
+    </div>
+    <div class="card dark" style="flex:1 1 560px;">
+      <span class="label">Exported PNG &middot; dark UI</span>
+      <img src="lifevault-lockup-dark.png" width="520" alt="">
+    </div>
+  </div>
+
+  <h2>Mark</h2>
+  <div class="grid">
+    <div class="card" style="flex:1 1 300px;">
+      <span class="label">SVG mark</span>
+      <img src="lifevault-logo.svg" width="168" alt="">
+    </div>
+    <div class="card dark" style="flex:1 1 300px;">
+      <span class="label">On brand navy</span>
+      <img src="lifevault-logo.svg" width="168" alt="">
+    </div>
+    <div class="card check" style="flex:1 1 300px;">
+      <span class="label">PNG 512 &middot; transparency check</span>
+      <img src="lifevault-logo-512.png" width="168" alt="">
+    </div>
+    <div class="card" style="flex:1 1 280px;">
+      <span class="label">PNG lockup &middot; transparency check</span>
+      <img src="lifevault-lockup.png" width="240" alt="">
+    </div>
+  </div>
+
+  <h2>App icon &amp; small sizes</h2>
+  <div class="grid">
+    <div class="card dark" style="flex:1 1 340px;">
+      <span class="label">Rounded app tile 512</span>
+      <div class="tiles">
+        <img src="lifevault-app-icon-512.png" width="120" alt="">
+        <img src="lifevault-app-icon-512.png" width="64" alt="">
+      </div>
+    </div>
+    <div class="card" style="flex:1 1 400px;">
+      <span class="label">Favicon scale &middot; 48 / 32 / 16</span>
+      <div class="row">
+        <div class="sz"><img src="lifevault-favicon-48.png" width="48" alt=""><span>48</span></div>
+        <div class="sz"><img src="lifevault-favicon-32.png" width="32" alt=""><span>32</span></div>
+        <div class="sz"><img src="lifevault-favicon-16.png" width="16" alt=""><span>16</span></div>
+        <div class="sz"><img src="lifevault-favicon.svg" width="48" alt=""><span>svg</span></div>
+      </div>
+    </div>
+    <div class="card dark" style="flex:1 1 400px;">
+      <span class="label">Same sizes on dark</span>
+      <div class="row">
+        <div class="sz"><img src="lifevault-favicon-48.png" width="48" alt=""><span>48</span></div>
+        <div class="sz"><img src="lifevault-favicon-32.png" width="32" alt=""><span>32</span></div>
+        <div class="sz"><img src="lifevault-favicon-16.png" width="16" alt=""><span>16</span></div>
+        <div class="sz"><img src="lifevault-logo-64.png" width="48" alt=""><span>mark</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Palette</h2>
+  <div class="grid">
+    <div class="card" style="flex:1 1 1240px; flex-direction:row; gap:10px;">
+      <div class="sz"><div style="width:96px;height:60px;border-radius:10px;background:#0A1120"></div><span>#0A1120</span></div>
+      <div class="sz"><div style="width:96px;height:60px;border-radius:10px;background:#123554"></div><span>#123554</span></div>
+      <div class="sz"><div style="width:96px;height:60px;border-radius:10px;background:#1D6B91"></div><span>#1D6B91</span></div>
+      <div class="sz"><div style="width:96px;height:60px;border-radius:10px;background:#06B6D4"></div><span>#06B6D4</span></div>
+      <div class="sz"><div style="width:96px;height:60px;border-radius:10px;background:#67E8F9"></div><span>#67E8F9</span></div>
+      <div class="sz"><div style="width:96px;height:60px;border-radius:10px;background:#A5F3FC"></div><span>#A5F3FC</span></div>
+      <div class="sz"><div style="width:96px;height:60px;border-radius:10px;background:#2A88B5"></div><span>#2A88B5</span></div>
+    </div>
+  </div>
+</body>
+</html>

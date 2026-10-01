@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="64" height="64" role="img" aria-label="LifeVault">
+  <title>LifeVault</title>
+  <defs>
+    <linearGradient id="fv-shield" x1="64" y1="6" x2="64" y2="122" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2A88B5"/>
+      <stop offset="0.45" stop-color="#123554"/>
+      <stop offset="1" stop-color="#0A1120"/>
+    </linearGradient>
+    <linearGradient id="fv-pulse" x1="26" y1="66" x2="102" y2="66" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#06B6D4"/>
+      <stop offset="0.5" stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#A5F3FC"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M26 14 H102 C109 14 114 19 114 26 V62 C114 90 94 109 64 119 C34 109 14 90 14 62 V26 C14 19 19 14 26 14 Z"
+        fill="url(#fv-shield)" stroke="#67E8F9" stroke-opacity="0.65" stroke-width="3"/>
+
+  <path d="M26 66 L46 66 L53 78 L60 40 L68 84 L75 66 L102 66"
+        fill="none" stroke="url(#fv-pulse)" stroke-width="9"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

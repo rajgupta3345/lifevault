@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LifeVault — Smart Personal Document &amp; Emergency Management System</title>
+<meta name="description" content="LifeVault is a local-first desktop prototype that keeps your documents, emergency contacts and critical paperwork encrypted, organised and ready when you need them.">
+<meta property="og:title" content="LifeVault">
+<meta property="og:description" content="Keep what matters safe, prepared and accessible. Encrypted documents, expiry tracking and an emergency pack — stored locally on your computer.">
+<meta property="og:image" content="assets/lifevault-app-icon-512.png">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/lifevault-favicon-32.png">
+<link rel="apple-touch-icon" href="assets/lifevault-app-icon-512.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <img src="assets/lifevault-logo.svg" width="34" height="34" alt="">
+      <span>Life<b>Vault</b></span>
+    </a>
+    <nav class="links">
+      <a href="#brand">Brand</a>
+      <a href="#features">Features</a>
+      <a href="#screens">Screens</a>
+      <a href="#install">Install</a>
+      <a class="btn btn-sm" href="https://github.com/rajgupta3345/lifevault" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap">
+      <img class="hero-icon" src="assets/lifevault-app-icon-512.png" width="112" height="112" alt="LifeVault app icon">
+      <h1>Keep what matters <span class="hl">safe, prepared<br class="br"> and accessible.</span></h1>
+      <p class="lede">LifeVault is a local-first desktop prototype that keeps your documents, emergency
+        contacts and critical paperwork encrypted on your own computer — organised for everyday life
+        and ready for an emergency.</p>
+
+      <div class="cta">
+        <a class="btn" href="#install">Get started</a>
+        <a class="btn btn-ghost" href="https://github.com/rajgupta3345/lifevault" target="_blank" rel="noopener">View source</a>
+      </div>
+
+      <ul class="badges">
+        <li>Python 3.11+</li>
+        <li>CustomTkinter</li>
+        <li>SQLite</li>
+        <li>AES-encrypted vault</li>
+        <li>100% local</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="brand">
+    <div class="wrap">
+      <p class="eyebrow">Brand</p>
+      <h2>Shield, dial, lifeline</h2>
+      <p class="section-lede">The mark is a shield holding a combination dial — opened left and right so an
+        ECG lifeline runs straight through it. Protection, vault and life in one symbol.</p>
+
+      <div class="brand-grid">
+        <div class="card brand-card span2">
+          <img src="assets/lifevault-logo-lockup.svg" alt="LifeVault horizontal logo lockup" width="420">
+          <span class="cap">Primary lockup</span>
+        </div>
+        <div class="card brand-card">
+          <img src="assets/lifevault-logo.svg" alt="LifeVault mark" width="140">
+          <span class="cap">Mark · 128px</span>
+        </div>
+        <div class="card brand-card dark">
+          <img src="assets/lifevault-app-icon-512.png" alt="LifeVault app icon" width="140">
+          <span class="cap">App icon</span>
+        </div>
+        <div class="card brand-card sizes">
+          <div class="row">
+            <img src="assets/lifevault-favicon-48.png" width="48" alt="">
+            <img src="assets/lifevault-favicon-32.png" width="32" alt="">
+            <img src="assets/lifevault-favicon-16.png" width="16" alt="">
+          </div>
+          <span class="cap">Favicon · 48 / 32 / 16</span>
+        </div>
+        <div class="card brand-card">
+          <div class="swatches">
+            <i style="--c:#0A1120"></i><i style="--c:#123554"></i><i style="--c:#1D6B91"></i>
+            <i style="--c:#06B6D4"></i><i style="--c:#67E8F9"></i><i style="--c:#A5F3FC"></i>
+          </div>
+          <span class="cap">Palette</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="features">
+    <div class="wrap">
+      <p class="eyebrow">Features</p>
+      <h2>Everything an emergency binder should be</h2>
+
+      <div class="features">
+        <article class="card">
+          <span class="ico">🔐</span>
+          <h3>Encrypted vault</h3>
+          <p>Random vault key wrapped by your master password <em>and</em> a one-time recovery code.
+             Documents are encrypted before they touch the disk.</p>
+        </article>
+        <article class="card">
+          <span class="ico">📄</span>
+          <h3>Document vault</h3>
+          <p>Store PDFs and files with categories, status, live search and fast filters for
+             Identity, Insurance, Vehicle, Medical and more.</p>
+        </article>
+        <article class="card">
+          <span class="ico">⏳</span>
+          <h3>Expiry tracking</h3>
+          <p>Passports, policies and licences get expiry dates with a readiness view that surfaces
+             what is about to lapse.</p>
+        </article>
+        <article class="card">
+          <span class="ico">🚨</span>
+          <h3>Emergency mode</h3>
+          <p>One click away: your emergency profile, critical documents and trusted contacts,
+             laid out for someone else to act on.</p>
+        </article>
+        <article class="card">
+          <span class="ico">🧭</span>
+          <h3>Readiness score</h3>
+          <p>A project-defined completeness score, activity log and demo data so the system is
+             easy to present and easy to fill in.</p>
+        </article>
+        <article class="card">
+          <span class="ico">🛡️</span>
+          <h3>Locks itself</h3>
+          <p>Salted PBKDF2-HMAC-SHA256 password hashing, optional Google sign-in for identity
+             verification, and a 15-minute inactivity lock.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="screens">
+    <div class="wrap">
+      <p class="eyebrow">Screens</p>
+      <h2>Built for clarity under pressure</h2>
+
+      <div class="shots">
+        <figure class="card shot">
+          <img src="screenshots/login.png" alt="LifeVault sign-in screen with the brand panel" loading="lazy">
+          <figcaption><b>Sign in</b> — local email + master password, optional Google verification.</figcaption>
+        </figure>
+        <figure class="card shot">
+          <img src="screenshots/dashboard.png" alt="LifeVault dashboard with readiness overview" loading="lazy">
+          <figcaption><b>Dashboard</b> — document counts, expiry alerts and emergency readiness at a glance.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="install">
+    <div class="wrap">
+      <p class="eyebrow">Install</p>
+      <h2>Running in two commands</h2>
+      <p class="section-lede">Requires Python 3.11 or newer. Everything stays on your machine.</p>
+
+      <div class="code card">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <pre><code><span class="c"># clone</span>
+git clone https://github.com/rajgupta3345/lifevault.git
+cd lifevault
+
+<span class="c"># install and run</span>
+python -m pip install -r requirements.txt
+python main.py</code></pre>
+      </div>
+
+      <p class="hint">On Windows you can just double-click <code>Run_LifeVault.bat</code> — it checks for
+        Python, installs the requirements and launches the app.</p>
+
+      <div class="notice card">
+        <b>Prototype notice.</b> LifeVault is a college/local prototype, not a production security,
+        medical, legal or emergency-response product. Data is stored on your computer — keep your
+        recovery code safe, and don't use demo data as real emergency information.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div>
+      <img src="assets/lifevault-logo-lockup.svg" alt="LifeVault" width="210">
+      <p>Document &amp; Emergency Vault · local-first prototype</p>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/rajgupta3345/lifevault" target="_blank" rel="noopener">GitHub</a>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+    </div>
+  </div>
+  <p class="copy">© <span id="y"></span> LifeVault · Built with Python, CustomTkinter and SQLite</p>
+</footer>
+
+<script>document.getElementById("y").textContent = new Date().getFullYear();</script>
+</body>
+</html>

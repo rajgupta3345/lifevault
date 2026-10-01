@@ -1,0 +1,27 @@
+LIFEVault - GOOGLE OAUTH DESKTOP SETUP
+======================================
+
+Google sign-in is optional and uses Google's OAuth 2.0 Installed App flow. LifeVault does not include shared credentials or a client secret. Create and supply your own Desktop OAuth client JSON.
+
+1. Open Google Cloud Console: https://console.cloud.google.com/
+2. Create or select a project.
+3. Open Google Auth Platform / OAuth consent screen and complete the app details required by Google. For a Testing audience, add your Google account as a test user.
+4. Open APIs & Services -> Credentials (or Google Auth Platform -> Clients).
+5. Choose Create credentials -> OAuth client ID.
+6. Select application type: Desktop app. Give it a recognizable name and create it.
+7. Download the client JSON.
+8. Rename the downloaded file to credentials.json.
+9. Place credentials.json beside main.py. Do not commit or share this file.
+10. Install project requirements and run python main.py. Choose Continue with Google; the browser opens for account consent.
+
+Requested scopes are limited to OpenID identity, email, and basic profile information. LifeVault does not request Gmail, Drive, Contacts, or other Google data access. If credentials.json is absent, Google sign-in displays setup instructions; local email/password sign-in continues to work.
+
+IMPORTANT VAULT UNLOCK DETAIL
+-----------------------------
+Google OAuth verifies the Google email identity. It does not replace the LifeVault master password, which is still required locally to unwrap the vault encryption key. A new Google identity continues through the normal LifeVault registration process and receives its own master password and recovery code. No vault key is derived from a public Google account identifier.
+
+LOCAL PASSWORD RECOVERY
+-----------------------
+LifeVault does not send email. During account creation it displays a random recovery code once. The code can locally unlock the vault key to set a new master password; the code is rotated after a successful reset. Store the new code safely. Losing both the master password and the recovery code makes the encrypted vault unrecoverable.
+
+This is a college/local prototype, not a production security product. OAuth access is only for identity verification; vault data remains on the local computer.
