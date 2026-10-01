@@ -49,6 +49,27 @@ and right so an ECG lifeline runs straight through it. See [`assets/README.md`](
 for the full kit (SVG + PNG exports, favicon, app icon, palette) and
 [`assets/preview.html`](assets/preview.html) for the visual spec sheet.
 
+## Live Site
+
+The project page is deployed on Vercel:
+
+- **https://lifevaultapp.vercel.app** — short alias
+- https://lifevault-tan.vercel.app — production deployment
+- https://github.com/rajgupta3345/lifevault — source
+
+It is a static showcase (logo kit, features, screenshots, install steps). The desktop
+application itself runs locally on Python — it cannot run inside a browser.
+
+To redeploy after editing `site/`, run from the repo root:
+
+```powershell
+.\deploy.ps1
+```
+
+The script needs Node.js and a Vercel login (`npx vercel login`); pass `-Token` or set
+`$env:VERCEL_TOKEN` if you prefer a token. It always repoints the short alias at the
+new deployment.
+
 ## Project Note
 
 This is a college/local prototype, not a production security, medical, legal, or emergency-response product. Data is stored on the local computer. Protect the computer and recovery code, and do not use demo data as real emergency information.
