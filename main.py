@@ -382,28 +382,34 @@ class LifeVault(ctk.CTk):
         # visual interest comes from the logo, accent rule and chips instead.
         content = ctk.CTkFrame(parent, fg_color="transparent")
         content.pack(fill="both", expand=True, padx=36, pady=32)
+        # Equal spacers keep the brand block vertically centred on tall
+        # screens while collapsing safely on short ones.
+        ctk.CTkFrame(content, fg_color="transparent",
+                     height=1).pack(fill="both", expand=True)
+        body = ctk.CTkFrame(content, fg_color="transparent")
+        body.pack(fill="x")
         # The logo itself is final - it is only positioned, never restyled.
-        self.brand_logo(content, 66).pack(anchor="w", pady=(0, 14))
-        brand_name = ctk.CTkFrame(content, fg_color="transparent")
+        self.brand_logo(body, 66).pack(anchor="w", pady=(0, 14))
+        brand_name = ctk.CTkFrame(body, fg_color="transparent")
         brand_name.pack(anchor="w", pady=(0, 7))
         ctk.CTkLabel(brand_name, text="Life", text_color="#FFFFFF",
                      font=("Segoe UI", 36, "bold")).pack(side="left")
         ctk.CTkLabel(brand_name, text="Vault", text_color=ACCENT_TEXT,
                      font=("Segoe UI", 36, "bold")).pack(side="left")
         ctk.CTkLabel(
-            content, text=subtitle or "Smart Personal Document and\nEmergency Management System",
+            body, text=subtitle or "Smart Personal Document and\nEmergency Management System",
             text_color="#A5D8E8", font=("Segoe UI", 13),
             justify="left", wraplength=320
         ).pack(anchor="w")
-        ctk.CTkFrame(content, width=56, height=3, fg_color=ACCENT,
+        ctk.CTkFrame(body, width=56, height=3, fg_color=ACCENT,
                      corner_radius=2).pack(anchor="w", pady=(24, 16))
         ctk.CTkLabel(
-            content, text="Keep what matters,\nsafe, prepared and accessible.",
+            body, text="Keep what matters,\nsafe, prepared and accessible.",
             text_color="#F8FAFC", font=("Segoe UI", 21, "bold"),
             justify="left", wraplength=320
         ).pack(anchor="w")
 
-        highlights = ctk.CTkFrame(content, fg_color="transparent")
+        highlights = ctk.CTkFrame(body, fg_color="transparent")
         highlights.pack(anchor="w", fill="x", pady=(22, 18))
         for label in ("ORGANIZE", "MONITOR", "PREPARE"):
             chip = ctk.CTkFrame(highlights, fg_color="#0F2A45",
@@ -413,7 +419,7 @@ class LifeVault(ctk.CTk):
             ctk.CTkLabel(chip, text=label, text_color=ACCENT_TEXT,
                          font=("Segoe UI", 9, "bold")).pack(padx=12, pady=5)
 
-        features = ctk.CTkFrame(content, fg_color="transparent")
+        features = ctk.CTkFrame(body, fg_color="transparent")
         features.pack(anchor="w", fill="x", pady=(2, 0))
         for icon_kind, label in (("vault", "Encrypted document vault"),
                                  ("calendar", "Expiry tracking and alerts"),
@@ -428,10 +434,12 @@ class LifeVault(ctk.CTk):
             ctk.CTkLabel(row, text=label, text_color="#C7D7E5",
                          font=("Segoe UI", 11)).pack(side="left")
 
-        ctk.CTkFrame(content, fg_color="transparent", height=10).pack(anchor="w")
-        ctk.CTkLabel(content, text="LOCAL-FIRST  ·  ENCRYPTED  ·  OFFLINE READY",
+        ctk.CTkFrame(body, fg_color="transparent", height=10).pack(anchor="w")
+        ctk.CTkLabel(body, text="LOCAL-FIRST  ·  ENCRYPTED  ·  OFFLINE READY",
                      text_color="#5C7C97", font=("Segoe UI", 9, "bold")
                      ).pack(anchor="w", pady=(14, 0))
+        ctk.CTkFrame(content, fg_color="transparent",
+                     height=1).pack(fill="both", expand=True)
 
     def clamp_geometry(self, width, height, reserve=(96, 112)):
         """Clamp a logical window size so it always fits the visible screen.
@@ -2123,6 +2131,7 @@ class LifeVault(ctk.CTk):
             controls.pack(fill="x")
         else:
             search_frame.pack(side="left", fill="x", expand=True, padx=(0, 9))
+            controls.pack(side="left")
         search_frame.pack_propagate(False)
         self.app_icon(search_frame, "search", color=MUTED, background=CARD,
                       size=18).pack(side="left", padx=(11, 3), pady=11)
