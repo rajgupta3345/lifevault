@@ -27,6 +27,7 @@
       <a href="#features">Features</a>
       <a href="#screens">Screens</a>
       <a href="#install">Install</a>
+      <button class="btn btn-sm auth-trigger" id="auth-trigger" type="button">Sign In</button>
       <a class="btn btn-sm" href="https://github.com/rajgupta3345/lifevault" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
@@ -54,6 +55,17 @@
         <li>AES-encrypted vault</li>
         <li>100% local</li>
       </ul>
+    </div>
+  </section>
+
+  <section class="section alt auth-dashboard" id="account-dashboard" aria-labelledby="account-heading" hidden>
+    <div class="wrap account-inner">
+      <div>
+        <p class="eyebrow">LifeVault account</p>
+        <h2 id="account-heading">Welcome back</h2>
+        <p class="section-lede">Signed in as <strong id="account-identity"></strong></p>
+      </div>
+      <button class="btn btn-ghost" id="logout-button" type="button">Sign Out</button>
     </div>
   </section>
 
@@ -205,6 +217,211 @@ python main.py</code></pre>
   <p class="copy">© <span id="y"></span> LifeVault · Built with Python, CustomTkinter and SQLite</p>
 </footer>
 
-<script>document.getElementById("y").textContent = new Date().getFullYear();</script>
+<dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
+  <div class="auth-dialog-inner">
+    <button class="auth-close" id="auth-close" type="button" aria-label="Close sign-in dialog">&times;</button>
+    <img class="auth-logo" src="assets/lifevault-logo.svg" width="44" height="44" alt="">
+    <p class="eyebrow" id="auth-eyebrow">Your secure space</p>
+    <h2 id="auth-title">Sign in to LifeVault</h2>
+    <p class="auth-intro" id="auth-description">Use your email and password to continue.</p>
+
+    <form class="auth-form" id="auth-form">
+      <label for="auth-email">Email address</label>
+      <input id="auth-email" name="email" type="email" autocomplete="email" required>
+      <label for="auth-password">Password</label>
+      <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="6" required>
+      <p class="auth-error" id="auth-error" role="alert" aria-live="polite" hidden></p>
+      <button class="btn auth-submit" id="auth-submit" type="submit">Sign In</button>
+    </form>
+
+    <div class="auth-divider"><span>or</span></div>
+    <button class="btn btn-ghost auth-google" id="google-sign-in" type="button">
+      <span class="google-mark" aria-hidden="true">G</span> Continue with Google
+    </button>
+    <p class="auth-switch-copy" id="auth-switch-copy">New to LifeVault?
+      <button class="auth-switch" id="auth-mode-toggle" type="button">Create an account</button>
+    </p>
+  </div>
+</dialog>
+
+<script>
+  document.getElementById("y").textContent = new Date().getFullYear();
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    createUserWithEmailAndPassword,
+    getAuth,
+    GoogleAuthProvider,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBPSSlfLJlVlGLF2jNqzVrmP3uqPumKESU",
+    authDomain: "lifevault-33.firebaseapp.com",
+    projectId: "lifevault-33",
+    storageBucket: "lifevault-33.firebasestorage.app",
+    messagingSenderId: "626408112490",
+    appId: "1:626408112490:web:1844ff1cb86291ab656513",
+    measurementId: "G-JN8PHZ2RB2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
+  const dialog = document.getElementById("auth-dialog");
+  const form = document.getElementById("auth-form");
+  const emailInput = document.getElementById("auth-email");
+  const passwordInput = document.getElementById("auth-password");
+  const errorMessage = document.getElementById("auth-error");
+  const submitButton = document.getElementById("auth-submit");
+  const modeToggle = document.getElementById("auth-mode-toggle");
+  const dashboard = document.getElementById("account-dashboard");
+  let isRegisterMode = false;
+  let isSubmitting = false;
+  let isSigningOut = false;
+  let isInitialAuthLoading = true;
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.hidden = !message;
+  }
+
+  function firebaseErrorText(error) {
+    const messages = {
+      "auth/email-already-in-use": "An account with this email already exists. Sign in or use another email.",
+      "auth/invalid-email": "Enter a valid email address.",
+      "auth/invalid-credential": "That email and password combination was not recognized.",
+      "auth/user-disabled": "This account has been disabled. Contact support for help.",
+      "auth/weak-password": "Choose a stronger password with at least 6 characters.",
+      "auth/popup-blocked": "Your browser blocked the Google sign-in window. Allow pop-ups and try again.",
+      "auth/popup-closed-by-user": "The Google sign-in window was closed before sign-in finished.",
+      "auth/unauthorized-domain": "This website domain is not authorized for Firebase sign-in. Add it in Firebase Console Authentication settings.",
+      "auth/network-request-failed": "A network error interrupted sign-in. Check your connection and try again.",
+      "auth/too-many-requests": "Sign-in is temporarily unavailable due to too many attempts. Try again later."
+    };
+    return messages[error.code] || `Authentication failed: ${error.message || "Please try again."}`;
+  }
+
+  function setMode(register) {
+    isRegisterMode = register;
+    document.getElementById("auth-title").textContent = register ? "Create your account" : "Sign in to LifeVault";
+    document.getElementById("auth-description").textContent = register
+      ? "Create an account to access your LifeVault profile."
+      : "Use your email and password to continue.";
+    document.getElementById("auth-eyebrow").textContent = register ? "Get started" : "Your secure space";
+    submitButton.textContent = register ? "Create Account" : "Sign In";
+    passwordInput.autocomplete = register ? "new-password" : "current-password";
+    document.getElementById("auth-switch-copy").firstChild.textContent = register
+      ? "Already have an account? "
+      : "New to LifeVault? ";
+    modeToggle.textContent = register ? "Sign in" : "Create an account";
+    showError("");
+  }
+
+  document.getElementById("auth-trigger").addEventListener("click", () => {
+    if (auth.currentUser) {
+      dashboard.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    setMode(false);
+    dialog.showModal();
+  });
+
+  document.getElementById("auth-close").addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", event => {
+    if (event.target === dialog) dialog.close();
+  });
+  modeToggle.addEventListener("click", () => setMode(!isRegisterMode));
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
+    showError("");
+    submitButton.disabled = true;
+    submitButton.textContent = isRegisterMode ? "Creating account..." : "Signing in...";
+    try {
+      if (isRegisterMode) {
+        await createUserWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
+      } else {
+        await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
+      }
+      dialog.close();
+      form.reset();
+    } catch (error) {
+      showError(firebaseErrorText(error));
+    } finally {
+      isSubmitting = false;
+      submitButton.disabled = false;
+      submitButton.textContent = isRegisterMode ? "Create Account" : "Sign In";
+    }
+  });
+
+  document.getElementById("google-sign-in").addEventListener("click", async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    showError("");
+    try {
+      await signInWithPopup(auth, googleProvider);
+      dialog.close();
+    } catch (error) {
+      showError(firebaseErrorText(error));
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.getElementById("logout-button").addEventListener("click", async event => {
+    const button = event.currentTarget;
+    if (isSigningOut) return;
+    isSigningOut = true;
+    try {
+      await signOut(auth);
+      renderAuthState(null);
+    } catch (error) {
+      window.alert(firebaseErrorText(error));
+    } finally {
+      isSigningOut = false;
+      button.disabled = false;
+    }
+  });
+
+  function renderAuthState(user) {
+    dashboard.hidden = !user;
+    document.getElementById("auth-trigger").textContent = user ? "Your Account" : "Sign In";
+    if (user) {
+      document.getElementById("account-heading").textContent = `Welcome${user.displayName ? `, ${user.displayName}` : " back"}`;
+      document.getElementById("account-identity").textContent = user.email || user.displayName || "Signed in";
+    }
+  }
+
+  function resolveInitialAuthState(user) {
+    if (!isInitialAuthLoading) return;
+    isInitialAuthLoading = false;
+    renderAuthState(user);
+  }
+
+  onAuthStateChanged(auth, user => {
+    if (isInitialAuthLoading) {
+      resolveInitialAuthState(user);
+    } else {
+      renderAuthState(user);
+    }
+  }, error => {
+    resolveInitialAuthState(null);
+    console.error("Unable to resolve Firebase authentication state:", error);
+  });
+
+  auth.authStateReady().then(() => {
+    resolveInitialAuthState(auth.currentUser);
+  }).catch(error => {
+    resolveInitialAuthState(null);
+    console.error("Unable to restore the Firebase authentication session:", error);
+  });
+</script>
 </body>
 </html>
