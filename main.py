@@ -2,12 +2,14 @@ import base64
 import hashlib
 import json
 import os
+import queue
 import secrets
 import shutil
 import sqlite3
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import webbrowser
 import urllib.request
@@ -715,21 +717,27 @@ class LifeVault(ctk.CTk):
                    visibility_var=None):
         # Accept both drawn icon kinds ("email", "lock") and legacy glyphs.
         kind = {"@": "email", "●": "lock", "◇": "readiness"}.get(icon, icon)
-        field = ctk.CTkFrame(parent, height=50, fg_color=CARD, corner_radius=12,
-                             border_width=1, border_color=BORDER_STRONG)
+        field_height = 54 if outlined else 50
+        field_radius = 14 if outlined else 12
+        field = ctk.CTkFrame(parent, height=field_height, fg_color=CARD,
+                             corner_radius=field_radius, border_width=1,
+                             border_color=BORDER_STRONG)
         field.pack_propagate(False)
         icon_canvas = Canvas(field, width=20, height=20, bg=CARD,
                              highlightthickness=0, bd=0)
         self.draw_outline_icon(icon_canvas, kind, color="#7C8DA3")
-        icon_canvas.pack(side="left", padx=(15, 11), pady=15)
+        icon_canvas.pack(side="left", padx=(15, 11),
+                         pady=17 if outlined else 15)
 
         entry = ctk.CTkEntry(
-            field, height=46, corner_radius=0, border_width=0,
+            field, height=42 if outlined else 46,
+            corner_radius=10 if outlined else 0, border_width=0,
             placeholder_text=placeholder, show=show or "",
             fg_color="transparent", text_color=TEXT,
             placeholder_text_color="#94A3B8", font=("Segoe UI", 13)
         )
-        entry.pack(side="left", fill="both", expand=True, padx=(0, 12), pady=1)
+        entry.pack(side="left", fill="both", expand=True, padx=(0, 12),
+                   pady=4 if outlined else 1)
 
         def _focus_in(_event=None):
             try:
@@ -754,7 +762,9 @@ class LifeVault(ctk.CTk):
             eye_canvas = Canvas(field, width=22, height=22, bg=CARD,
                                 highlightthickness=0, bd=0, cursor="hand2")
             self.draw_outline_icon(eye_canvas, "eye_off", color="#7C8DA3")
-            eye_canvas.pack(side="right", padx=(5, 12), pady=15)
+            eye_padding = max((field_height - 22 - 2) // 2, 0)
+            eye_canvas.pack(side="right", padx=(5, 12),
+                            pady=eye_padding)
             entry._visibility_icon = eye_canvas
 
             def toggle_visibility(_event=None):
@@ -823,6 +833,15 @@ class LifeVault(ctk.CTk):
             strip._dot.create_oval(2, 2, 8, 8, fill=dot, outline="")
             strip._label.configure(text=text, text_color=fg)
             strip._tone, strip._base_text = tone, text
+            if getattr(strip, "_pending_pack", False):
+                # Reveal the strip above its action button on first feedback.
+                strip._pending_pack = False
+                options = {"fill": "x",
+                           "pady": getattr(strip, "_pack_pady", (0, 11))}
+                before = getattr(strip, "_before", None)
+                if before is not None and before.winfo_exists():
+                    options["before"] = before
+                strip.pack(**options)
             if tone == "busy":
                 self._pulse_status(strip, 0)
         except Exception:
@@ -952,14 +971,14 @@ class LifeVault(ctk.CTk):
 
         self.auth_field_label(form, "Email address")
         email_field, self.login_email = self.auth_entry(
-            form, "email", "you@example.com", outlined=True
+            form, "email", "Enter email", outlined=True
         )
         email_field.pack(fill="x", pady=(5, 12))
 
         self.auth_field_label(form, "Password")
         self.login_password_visible = ctk.BooleanVar(value=False)
         password_field, self.login_password = self.auth_entry(
-            form, "lock", "Enter your master password", show="\u2022",
+            form, "lock", "Enter password", show="\u2022",
             outlined=True, visibility_var=self.login_password_visible
         )
         password_field.pack(fill="x", pady=(5, 10))
@@ -974,10 +993,14 @@ class LifeVault(ctk.CTk):
                       text_color=PRIMARY, font=("Segoe UI", 11, "bold"),
                       command=self.forgot_password_info).pack(side="right")
 
+        # No standing informational line: the strip stays hidden (and takes no
+        # space) until there is real feedback such as an error or busy state.
         self.login_status = self.auth_status(
-            form, "Protected with salted PBKDF2 hashing and a locally encrypted vault.",
-            tone="neutral", pady=(10, 12)
+            form, "", tone="neutral", pady=(10, 12)
         )
+        self.login_status.pack_forget()
+        self.login_status._pending_pack = True
+        self.login_status._pack_pady = (10, 12)
 
         def submit_login():
             self.set_auth_status(self.login_status, "Verifying your credentials", "busy")
@@ -990,6 +1013,15 @@ class LifeVault(ctk.CTk):
             command=lambda: self.run_auth_action(signin, "Signing in…", submit_login)
         )
         signin.pack(fill="x", pady=(0, 4))
+        self.login_status._before = signin
+
+        def submit_login_from_enter(_event=None):
+            signin.invoke()
+            return "break"
+
+        for login_field in (self.login_email, self.login_password):
+            login_field.bind("<Return>", submit_login_from_enter, add="+")
+            login_field.bind("<KP_Enter>", submit_login_from_enter, add="+")
 
         self.auth_divider(card, "or continue with")
         google_control = ctk.CTkFrame(
@@ -1027,12 +1059,8 @@ class LifeVault(ctk.CTk):
         self.fit_auth_card(card, right)
 
     def google_signin(self):
-        """Google sign-in with a busy state (the OAuth flow itself is unchanged)."""
-        button = getattr(self, "_google_button", None)
-        if button is None:
-            self.google_login()
-            return
-        self.run_auth_action(button, "Opening Google…", self.google_login)
+        """Start Google sign-in without blocking Tk's event loop."""
+        self.google_login()
 
     def add_password_toggle(self, parent, *entries, text="Show password", variable=None):
         visible = variable or ctk.BooleanVar(value=False)
@@ -1067,6 +1095,8 @@ class LifeVault(ctk.CTk):
 
     def google_login(self):
         """Real Google OAuth login when credentials.json is supplied."""
+        if getattr(self, "_google_login_pending", False):
+            return
         if InstalledAppFlow is None:
             messagebox.showerror(
                 "Google Login Setup",
@@ -1090,6 +1120,32 @@ class LifeVault(ctk.CTk):
             except Exception:
                 pass
             return
+
+        self._google_login_pending = True
+        self._google_login_results = queue.Queue()
+        button = getattr(self, "_google_button", None)
+        if button is not None:
+            try:
+                button.configure(text="Opening Google…", state="disabled",
+                                 fg_color=PRIMARY_HOVER, cursor="watch")
+            except Exception:
+                pass
+        status = getattr(self, "login_status", None)
+        if status is not None:
+            self.set_auth_status(status, "Waiting for Google sign-in", "busy")
+
+        worker = threading.Thread(
+            target=self._google_login_worker,
+            args=(credentials_path, self._google_login_results),
+            daemon=True,
+        )
+        try:
+            worker.start()
+        except Exception as exc:
+            self._google_login_results.put((None, exc, False))
+        self._google_login_poll_id = self.after(100, self._poll_google_login_result)
+
+    def _google_login_worker(self, credentials_path, result_queue):
         try:
             scopes = [
                 "openid",
@@ -1097,7 +1153,9 @@ class LifeVault(ctk.CTk):
                 "https://www.googleapis.com/auth/userinfo.profile",
             ]
             flow = InstalledAppFlow.from_client_secrets_file(str(credentials_path), scopes=scopes)
-            creds = flow.run_local_server(port=0, prompt="select_account")
+            creds = flow.run_local_server(
+                port=0, prompt="select_account", timeout_seconds=60
+            )
             req = urllib.request.Request(
                 "https://openidconnect.googleapis.com/v1/userinfo",
                 headers={"Authorization": f"Bearer {creds.token}"}
@@ -1111,24 +1169,76 @@ class LifeVault(ctk.CTk):
             sub = info.get("sub", "")
             if not email or not sub:
                 raise RuntimeError("Google did not return a valid account identity.")
-
-            row = self.db.execute("SELECT * FROM users WHERE email=?", (email,), fetch=True, one=True)
-            if row:
-                self.login_email.delete(0, "end")
-                self.login_email.insert(0, email)
-                messagebox.showinfo(
-                    "Google identity verified",
-                    "Google verified this email. Enter your LifeVault master password to unlock its encrypted local vault."
-                )
-            else:
-                self.google_identity = (name, email)
-                self.show_register()
-                messagebox.showinfo(
-                    "Google identity verified",
-                    "Set a LifeVault master password and recovery code to create your encrypted local vault."
-                )
+            result_queue.put(({"name": name, "email": email}, None, False))
         except Exception as exc:
-            messagebox.showerror("Google Login Failed", f"Google sign-in could not be completed.\n\n{exc}")
+            result_queue.put((None, exc, self._is_google_oauth_cancellation(exc)))
+
+    def _is_google_oauth_cancellation(self, error):
+        error_name = type(error).__name__.lower()
+        error_code = str(getattr(error, "error", "")).lower()
+        error_text = str(error).lower()
+        return (
+            isinstance(error, TimeoutError)
+            or "timeout" in error_name
+            or error_code in {"access_denied", "user_cancelled", "cancelled"}
+            or any(term in error_text for term in (
+                "access_denied", "user cancelled", "user canceled",
+                "authorization cancelled", "authorization canceled",
+            ))
+        )
+
+    def _poll_google_login_result(self):
+        if not getattr(self, "_google_login_pending", False):
+            return
+        try:
+            result, error, cancelled = self._google_login_results.get_nowait()
+        except queue.Empty:
+            self._google_login_poll_id = self.after(100, self._poll_google_login_result)
+            return
+
+        self._google_login_pending = False
+        self._google_login_poll_id = None
+        button = getattr(self, "_google_button", None)
+        if button is not None:
+            try:
+                if button.winfo_exists():
+                    button.configure(text="Continue with Google", state="normal",
+                                     fg_color="transparent", cursor="")
+            except Exception:
+                pass
+        status = getattr(self, "login_status", None)
+        if status is not None:
+            self.set_auth_status(status, "", "neutral")
+            try:
+                status.pack_forget()
+                status._pending_pack = True
+            except Exception:
+                pass
+
+        if error is not None:
+            if not cancelled:
+                messagebox.showerror(
+                    "Google Login Failed",
+                    f"Google sign-in could not be completed.\n\n{error}"
+                )
+            return
+
+        name, email = result["name"], result["email"]
+        row = self.db.execute("SELECT * FROM users WHERE email=?", (email,), fetch=True, one=True)
+        if row:
+            self.login_email.delete(0, "end")
+            self.login_email.insert(0, email)
+            messagebox.showinfo(
+                "Google identity verified",
+                "Google verified this email. Enter your LifeVault master password to unlock its encrypted local vault."
+            )
+        else:
+            self.google_identity = (name, email)
+            self.show_register()
+            messagebox.showinfo(
+                "Google identity verified",
+                "Set a LifeVault master password and recovery code to create your encrypted local vault."
+            )
 
     def forgot_password_info(self):
         dlg = ctk.CTkToplevel(self)
@@ -1577,18 +1687,35 @@ class LifeVault(ctk.CTk):
                 anchor="w", padx=12, pady=(9, 2)
             )
             for label, icon_kind, command in section_items:
-                row = ctk.CTkFrame(nav, fg_color="transparent", corner_radius=9, height=38)
+                row = ctk.CTkFrame(nav, fg_color="transparent", corner_radius=19, height=38)
                 row.pack(fill="x", padx=6, pady=1)
                 row.pack_propagate(False)
+                row._nav_background = SIDEBAR
+                row._nav_animation = None
+                row._nav_active = False
+                row._nav_hovered = False
                 icon = self.app_icon(row, icon_kind, color="#8FA3BC", background=SIDEBAR)
                 icon.pack(side="left", padx=(12, 9))
                 action = lambda callback=command: self.navigate(callback)
                 icon.bind("<Button-1>", lambda _event, callback=action: callback())
-                button = ctk.CTkButton(row, text=label, anchor="w", height=38, corner_radius=9,
-                                       fg_color="transparent", hover_color=SIDEBAR_HOVER,
+                button = ctk.CTkButton(row, text=label, anchor="w", height=38, corner_radius=19,
+                                       fg_color="transparent", hover_color=SIDEBAR,
                                        text_color=SIDEBAR_TEXT, font=("Segoe UI", 12),
                                        command=action)
                 button.pack(side="left", fill="both", expand=True, padx=(0, 4))
+                for widget in (row, button, icon):
+                    widget.bind(
+                        "<Enter>",
+                        lambda event, item=row, glyph=icon: self._sidebar_item_hover(
+                            event, item, glyph, True
+                        ),
+                    )
+                    widget.bind(
+                        "<Leave>",
+                        lambda event, item=row, glyph=icon: self._sidebar_item_hover(
+                            event, item, glyph, False
+                        ),
+                    )
                 self._sidebar_buttons.append(button)
                 self._nav_items.append((row, button, icon, icon_kind))
 
@@ -1757,17 +1884,77 @@ class LifeVault(ctk.CTk):
                 continue
             on = index == active
             try:
-                row.configure(fg_color=SIDEBAR_ACTIVE if on else "transparent")
+                was_active = row._nav_active
+                row._nav_active = on
                 button.configure(
                     fg_color="transparent",
-                    hover_color="#1B3050" if on else SIDEBAR_HOVER,
+                    hover_color=SIDEBAR_ACTIVE if on else SIDEBAR,
                     text_color="#FFFFFF" if on else SIDEBAR_TEXT,
                     font=("Segoe UI", 12, "bold") if on else ("Segoe UI", 12),
                 )
-                icon.configure(bg=SIDEBAR_ACTIVE if on else SIDEBAR)
-                self.draw_outline_icon(icon, kind, color=ACCENT if on else "#8FA3BC")
+                if was_active != on:
+                    self.draw_outline_icon(icon, kind, color=ACCENT if on else "#8FA3BC")
+                self._animate_sidebar_item(
+                    row, icon,
+                    self._sidebar_item_color(row),
+                )
             except Exception:
                 continue
+
+    def _sidebar_item_color(self, row):
+        if row._nav_hovered:
+            return "#1B3050" if row._nav_active else SIDEBAR_HOVER
+        return SIDEBAR_ACTIVE if row._nav_active else SIDEBAR
+
+    def _sidebar_item_hover(self, event, row, icon, hovered):
+        if not row.winfo_exists():
+            return
+        if not hovered:
+            pointer_x, pointer_y = row.winfo_pointerxy()
+            inside = (
+                row.winfo_rootx() <= pointer_x < row.winfo_rootx() + row.winfo_width()
+                and row.winfo_rooty() <= pointer_y < row.winfo_rooty() + row.winfo_height()
+            )
+            if inside or not row._nav_hovered:
+                return
+        elif row._nav_hovered:
+            return
+        row._nav_hovered = hovered
+        self._animate_sidebar_item(row, icon, self._sidebar_item_color(row))
+
+    def _animate_sidebar_item(self, row, icon, target):
+        animation = row._nav_animation
+        if animation is not None:
+            try:
+                self.after_cancel(animation)
+            except Exception:
+                pass
+            row._nav_animation = None
+
+        start = row._nav_background
+        if start == target:
+            return
+        start_rgb = tuple(int(start[index:index + 2], 16) for index in (1, 3, 5))
+        target_rgb = tuple(int(target[index:index + 2], 16) for index in (1, 3, 5))
+        steps = 9
+
+        def animate(step=1):
+            if not row.winfo_exists():
+                return
+            eased = 1 - (1 - step / steps) ** 2
+            color = "#" + "".join(
+                f"{round(first + (last - first) * eased):02X}"
+                for first, last in zip(start_rgb, target_rgb)
+            )
+            row.configure(fg_color=color)
+            icon.configure(bg=color)
+            row._nav_background = color
+            if step < steps:
+                row._nav_animation = self.after(25, lambda: animate(step + 1))
+            else:
+                row._nav_animation = None
+
+        animate()
 
     def page(self, title, subtitle="", content_color=BG, title_color=TEXT, subtitle_color=MUTED):
         try:
